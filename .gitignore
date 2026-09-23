@@ -34,3 +34,6 @@ dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Daemon output
+*.log
