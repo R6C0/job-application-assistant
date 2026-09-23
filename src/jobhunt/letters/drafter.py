@@ -33,6 +33,7 @@ import logging
 import re
 
 from ..matching.profile import Evidence, Profile
+from ..matching.skills import canonicalise
 from ..models import CompanyBrief, Job, Letter, Match
 
 log = logging.getLogger(__name__)
@@ -71,6 +72,19 @@ OPENING_MOVES = [
 ]
 
 _NUMBER_RE = re.compile(r"\b\d[\d,.]*\s*(?:%|k|m|bn)?\b", re.IGNORECASE)
+
+#: Words that keep their capital when a sentence is spliced in after a colon.
+#: Without this, "I wrote the PySpark layer" becomes "i wrote the PySpark layer".
+_KEEP_CAPITAL = {"I", "I'm", "I've", "AWS", "ETL", "SQL", "API", "UK", "CSV", "BI"}
+
+
+def _decapitalise(text: str) -> str:
+    """Lowercase a sentence's first word so it can follow a colon."""
+    first, separator, rest = text.partition(" ")
+    if first in _KEEP_CAPITAL or (first.isupper() and len(first) > 1):
+        return text
+    return first.lower() + separator + rest
+
 
 SYSTEM_PROMPT = """You draft cover letters for a specific person applying to a \
 specific job.
@@ -284,6 +298,23 @@ Maximum {self.max_words} words. Return the letter only, no preamble or commentar
         return problems
 
     # ------------------------------------------------------------------
+    def _headline_skills(self, match: Match, limit: int = 4) -> list[str]:
+        """The skills worth naming, most important first.
+
+        `Match.matched_skills` is sorted alphabetically for stable storage, which
+        is the wrong order to quote: it put "airflow, databricks, dbt" ahead of
+        Python and SQL on a posting that listed the first three as nice-to-have.
+        Core skills lead, in the order you declared them.
+        """
+        matched = set(match.matched_skills)
+        core = [canonicalise(s) for s in self.profile.must_have_skills]
+        secondary = [canonicalise(s) for s in self.profile.nice_to_have_skills]
+
+        ordered = [s for s in core if s in matched]
+        ordered += [s for s in secondary if s in matched and s not in ordered]
+        ordered += [s for s in match.matched_skills if s not in ordered]
+        return ordered[:limit]
+
     def _draft_from_template(
         self, job: Job, match: Match, evidence: list[Evidence]
     ) -> str:
@@ -291,7 +322,7 @@ Maximum {self.max_words} words. Return the letter only, no preamble or commentar
         lead = evidence[0] if evidence else None
         others = evidence[1:3]
 
-        skills = ", ".join(match.matched_skills[:4]) or "the areas listed"
+        skills = ", ".join(self._headline_skills(match)) or "the areas listed"
 
         paragraphs = [
             "Dear hiring team,",
@@ -309,9 +340,7 @@ Maximum {self.max_words} words. Return the letter only, no preamble or commentar
 
         if others:
             paragraphs.append(
-                "Alongside that: "
-                + "; ".join(e.text[0].lower() + e.text[1:] for e in others)
-                + "."
+                "Alongside that: " + "; ".join(_decapitalise(e.text) for e in others) + "."
             )
 
         paragraphs.append(

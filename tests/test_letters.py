@@ -117,3 +117,37 @@ def test_drafts_something_even_with_no_skill_overlap(profile, scoring):
 
     assert letter.body.strip()
     assert letter.evidence_used
+
+
+class TestTemplatePolish:
+    """Two defects found by reading real output rather than by a failing test."""
+
+    def test_splicing_keeps_the_capital_on_I(self, profile, scoring):
+        """"I wrote the PySpark layer" must not become "i wrote ..."."""
+        from jobhunt.letters.drafter import _decapitalise
+
+        assert _decapitalise("I wrote the layer") == "I wrote the layer"
+        assert _decapitalise("AWS Glue jobs ran") == "AWS Glue jobs ran"
+        assert _decapitalise("When the vendor changed") == "when the vendor changed"
+
+    def test_template_body_has_no_lowercase_i(self, profile, scoring):
+        job = make_job(description="Python SQL ETL AWS pipeline work, plus dbt and Airflow.")
+        match = Scorer(profile, scoring).score(job)
+        body = LetterDrafter(profile, backend="template").draft(job, match).body
+
+        assert " i " not in body
+        assert not body.startswith("i ")
+
+    def test_headline_skills_lead_with_core_not_alphabetical(self, profile, scoring):
+        """Alphabetical order put 'airflow, databricks, dbt' ahead of Python and SQL."""
+        job = make_job(
+            description=(
+                "Build pipelines with Python and SQL on AWS. ETL experience required. "
+                "Nice to have: Airflow, dbt, Databricks."
+            )
+        )
+        match = Scorer(profile, scoring).score(job)
+        headline = LetterDrafter(profile, backend="template")._headline_skills(match)
+
+        assert headline[0] in {"python", "sql", "etl", "aws"}
+        assert "python" in headline
