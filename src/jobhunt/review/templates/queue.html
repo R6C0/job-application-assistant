@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Review queue{% endblock %}
+
+{% macro score_class(score) -%}
+{% if score >= 80 %}s-high{% elif score >= 65 %}s-mid{% else %}s-low{% endif %}
+{%- endmacro %}
+
+{% macro job_card(app, show_stage=false) %}
+<div class="card">
+  <div class="row">
+    <div>
+      <h3><a href="/job/{{ app.job.id }}">{{ app.job.title }}</a></h3>
+      <div class="meta">
+        {{ app.job.company }}
+        {% if app.job.location %} &middot; {{ app.job.location }}{% endif %}
+        {% if app.job.salary_max %} &middot; up to {{ "{:,.0f}".format(app.job.salary_max) }}{% endif %}
+        &middot; via {{ app.job.source }}
+        {% if show_stage %} &middot; {{ app.stage.value }}{% endif %}
+      </div>
+      {% if app.match %}
+      <div class="chips">
+        {% for reason in app.match.top_reasons(3) %}
+        <span class="chip">{{ reason.detail }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if app.letter and not app.letter.edited_by_human %}
+      <div class="note flag">Draft not yet edited.</div>
+      {% endif %}
+    </div>
+    {% if app.match %}
+    <div class="score {{ score_class(app.match.score) }}">{{ "%.0f"|format(app.match.score) }}</div>
+    {% endif %}
+  </div>
+</div>
+{% endmacro %}
+
+{% block content %}
+
+<h2>Awaiting review ({{ awaiting|length }})</h2>
+{% for app in awaiting %}{{ job_card(app) }}{% else %}
+<p class="empty">Nothing waiting. Run <code>jobhunt run</code> to look for more.</p>
+{% endfor %}
+
+{% if approved %}
+<h2>Approved, not yet submitted ({{ approved|length }})</h2>
+{% for app in approved %}{{ job_card(app) }}{% endfor %}
+{% endif %}
+
+{% if submitted %}
+<h2>Submitted</h2>
+{% for app in submitted %}{{ job_card(app, true) }}{% endfor %}
+{% endif %}
+
+<h2>Totals</h2>
+<div class="card">
+  <table>
+    {% for stage, count in counts.items() %}
+    <tr><td>{{ stage.replace('_', ' ') }}</td><td></td><td>{{ count }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+{% endblock %}

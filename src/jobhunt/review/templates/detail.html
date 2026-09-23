@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}{{ app.job.title }} - {{ app.job.company }}{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="row">
+    <div>
+      <h3>{{ app.job.title }}</h3>
+      <div class="meta">
+        {{ app.job.company }}
+        {% if app.job.location %} &middot; {{ app.job.location }}{% endif %}
+        {% if app.job.salary_min or app.job.salary_max %}
+          &middot;
+          {% if app.job.salary_min %}{{ "{:,.0f}".format(app.job.salary_min) }}{% endif %}
+          {% if app.job.salary_max %}-{{ "{:,.0f}".format(app.job.salary_max) }}{% endif %}
+        {% endif %}
+        &middot; <a href="{{ app.job.url }}" target="_blank" rel="noopener">original posting</a>
+      </div>
+      <div class="note">Stage: {{ app.stage.value.replace('_', ' ') }}</div>
+    </div>
+    {% if app.match %}
+    <div class="score {% if app.match.score >= 80 %}s-high{% elif app.match.score >= 65 %}s-mid{% else %}s-low{% endif %}">
+      {{ "%.0f"|format(app.match.score) }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if app.match %}
+<h2>Why it scored that</h2>
+<div class="card">
+  <table>
+    {% for reason in app.match.reasons %}
+    <tr>
+      <td>{{ reason.component }}</td>
+      <td>{{ reason.detail }}</td>
+      <td>{{ "%.1f"|format(reason.points) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <div class="chips">
+    {% for skill in app.match.matched_skills %}<span class="chip on">{{ skill }}</span>{% endfor %}
+    {% for skill in app.match.missing_skills %}<span class="chip off">{{ skill }}</span>{% endfor %}
+  </div>
+  <div class="note">
+    Green: asked for and you have it. Red: you listed it as core and the posting
+    does not mention it, which usually means the role points somewhere else.
+  </div>
+</div>
+{% endif %}
+
+{% if app.brief %}
+<h2>Company</h2>
+<div class="card">
+  <p style="margin-top:0">{{ app.brief.summary }}</p>
+  {% if app.brief.facts %}
+  <table>
+    {% for key, value in app.brief.facts.items() %}
+    <tr><td>{{ key }}</td><td>{{ value }}</td><td></td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+  <div class="note">
+    Confidence: {{ app.brief.confidence }}.
+    {% if app.brief.sources %}
+      <a href="{{ app.brief.sources[0] }}" target="_blank" rel="noopener">Companies House record</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<h2>Job description</h2>
+<div class="card"><div class="jd">{{ app.job.description }}</div></div>
+
+<h2>Cover letter</h2>
+<div class="card">
+  {% if app.letter %}
+  <div class="note" style="margin-top:0">
+    Drafted by {{ app.letter.generator }}{% if app.letter.evidence_used %},
+    from evidence: {{ app.letter.evidence_used|join(', ') }}{% endif %}.
+    {% if not app.letter.edited_by_human %}
+    <span class="flag">You have not edited this yet. Read it before approving.</span>
+    {% endif %}
+  </div>
+  <form method="post" action="/job/{{ app.job.id }}/letter">
+    <textarea name="body" spellcheck="true">{{ app.letter.body }}</textarea>
+    <div class="actions">
+      <button type="submit">Save edits</button>
+    </div>
+  </form>
+  {% else %}
+  <p class="empty">No draft. Drafting failed, or no evidence matched this posting.</p>
+  {% endif %}
+</div>
+
+<h2>Next</h2>
+<div class="card">
+  <div class="actions">
+    {% if app.stage.value == 'awaiting_review' %}
+    <form method="post" action="/job/{{ app.job.id }}/approve">
+      <button type="submit" class="primary">Approve</button>
+    </form>
+    <form method="post" action="/job/{{ app.job.id }}/skip">
+      <input type="hidden" name="reason" value="not a fit">
+      <button type="submit" class="danger">Skip</button>
+    </form>
+    {% elif app.stage.value == 'approved' %}
+    <form method="post" action="/job/{{ app.job.id }}/assist">
+      <button type="submit" class="primary">Open form with my details</button>
+    </form>
+    <a class="btn" href="{{ app.job.url }}" target="_blank" rel="noopener">Open posting</a>
+    <form method="post" action="/job/{{ app.job.id }}/mark-submitted">
+      <button type="submit">I have submitted it</button>
+    </form>
+    {% else %}
+    <a class="btn" href="/">Back to queue</a>
+    {% endif %}
+  </div>
+  <div class="note">
+    This tool does not press submit. "Open form with my details" launches a browser,
+    fills what it can from your profile and attaches {{ cv_path }}, then leaves the
+    final check and the submit button to you.
+  </div>
+  {% if app.notes %}<div class="note">Notes: {{ app.notes }}</div>{% endif %}
+</div>
+
+{% endblock %}

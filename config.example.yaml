@@ -1,0 +1,75 @@
+# Copy to config.yaml and edit. Preferences live here; secrets live in .env.
+#
+# Nothing in this file is read as a credential, so a config.yaml is safe to
+# share when asking someone why your matching is odd.
+
+profile_path: profile.yaml
+database_path: jobhunt.db
+
+sources:
+  adzuna:
+    enabled: true
+    # One query per search. Each is a separate API call, so five is plenty.
+    queries:
+      - data engineer
+      - analytics engineer
+      - python data pipeline
+      - ai engineer
+      - automation engineer
+    location: London
+    radius_km: 40
+    max_results: 50
+    max_days_old: 14
+
+  reed:
+    enabled: true
+    queries:
+      - data engineer
+      - analytics engineer
+      - python etl
+    location: London
+    radius_km: 40
+    # Reed costs one extra request per result to get the full description, so
+    # keep this lower than Adzuna's.
+    max_results: 25
+    max_days_old: 14
+
+scoring:
+  # Below this, the job is recorded and dropped without a notification.
+  # Start at 65, watch what gets through for a few days, then adjust.
+  notify_threshold: 65
+
+  # Relative weights. They do not need to sum to 100; the scorer normalises.
+  # Tune these rather than editing the scorer.
+  weights:
+    skills: 40
+    title: 20
+    seniority: 15
+    location: 10
+    salary: 10
+    recency: 5
+
+notify:
+  backend: ntfy          # ntfy | desktop | none
+  ntfy_server: https://ntfy.sh
+  # Topic goes in .env as JOBHUNT_NTFY_TOPIC, not here: anyone who knows it can
+  # read your notifications.
+  review_base_url: http://127.0.0.1:8765
+  max_per_run: 10
+  max_per_day: 25
+
+letters:
+  backend: auto          # auto | claude | template
+  model: claude-sonnet-5
+  max_words: 320
+
+apply:
+  assisted_fill: true
+  # Headless defeats the point: you cannot check a form you cannot see.
+  headless: false
+  cv_path: cv.pdf
+
+daemon:
+  interval_minutes: 90
+  # No notifications between these hours, local time.
+  quiet_hours: [22, 7]

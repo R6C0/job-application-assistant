@@ -1,0 +1,56 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check src tests
+
+      - name: Test
+        run: pytest -q
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # This repository is a job search tool: the interesting failure mode is a
+      # personal profile or an API key being committed by accident.
+      - name: Check no personal config is committed
+        run: |
+          for f in config.yaml profile.yaml .env cv.pdf jobhunt.db; do
+            if git ls-files --error-unmatch "$f" 2>/dev/null; then
+              echo "::error::$f is tracked and must not be"
+              exit 1
+            fi
+          done
+          echo "no personal files tracked"
+
+      - name: Check no obvious keys in tracked files
+        run: |
+          if git grep -nIE '(sk-ant-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16})' -- . ; then
+            echo "::error::possible credential in a tracked file"
+            exit 1
+          fi
+          echo "no credentials found"

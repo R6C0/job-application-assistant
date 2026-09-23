@@ -1,0 +1,36 @@
+# Secrets
+.env
+
+# Your actual profile and config: these describe you, not the tool
+config.yaml
+profile.yaml
+
+# Your CV and any generated documents
+*.pdf
+*.docx
+letters/out/
+
+# Local state: scored jobs, drafts, application history
+*.db
+*.db-wal
+*.db-shm
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Playwright
+.playwright/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

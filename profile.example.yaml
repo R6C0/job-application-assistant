@@ -1,0 +1,179 @@
+# Your CV, as structured data.
+#
+# Copy to profile.yaml and edit. This file is the only thing the letter drafter
+# is allowed to say about you, so everything in `evidence` should be something
+# you can defend in an interview.
+#
+# profile.yaml is gitignored. This example is not, so keep it generic.
+
+name: Joshua Charles
+email: you@example.com
+phone: "+44 7700 900000"
+location: London, UK
+headline: Data and software engineer, three years in production ETL and automation
+
+# Used for title scoring. Order does not matter.
+target_roles:
+  - Data Engineer
+  - Analytics Engineer
+  - AI Engineer
+  - Machine Learning Engineer
+  - Data Architect
+  - Automation Engineer
+
+# junior | mid | senior. Drives the seniority component and the years-of-experience
+# blocker: at "mid", a posting demanding more than 6 years is filtered out.
+seniority: mid
+
+# Skills you want a posting to mention. A job missing most of these is probably
+# pointed at a different kind of engineer.
+must_have_skills:
+  - Python
+  - SQL
+  - ETL
+  - data pipeline
+  - AWS
+
+nice_to_have_skills:
+  - PySpark
+  - Power BI
+  - DAX
+  - Power Query
+  - Parquet
+  - Athena
+  - Glue
+  - Lambda
+  - S3
+  - Azure DevOps
+  - REST API
+  - pandas
+  - Git
+  - Airflow
+  - dbt
+  - Snowflake
+  - Databricks
+  - Docker
+  - LLM
+  - RAG
+  - prompt engineering
+  - data modelling
+
+preferences:
+  min_salary: 45000
+  locations:
+    - London
+    - Milton Keynes
+    - Remote
+  remote_ok: true
+  onsite_ok: true
+  contract_ok: false
+  exclude_companies: []
+  # Titles that match your keywords but are not the job you want.
+  exclude_title_terms:
+    - sales
+    - recruiter
+    - business development
+    - teacher
+
+# The facts the drafter may use. One achievement each, with the number if there
+# is one. `skills` is what decides which posting each is offered for.
+evidence:
+  - id: ev-pipeline-scale
+    text: >-
+      I own a production ETL pipeline processing around 380,000 EV charging
+      session records a month, ingesting semicolon-delimited CSVs from vendor S3
+      exports through SharePoint into Power BI
+    metric: 380,000 records a month
+    context: EV charging network operator, hardware validation team
+    skills: [Python, SQL, ETL, data pipeline, Power BI, AWS, S3]
+
+  - id: ev-schema-break
+    text: >-
+      When an upstream vendor changed their CSV schema without notice, shifting
+      headers and swapping the delimiter, I led the remediation and restored full
+      data flow within 48 hours
+    metric: 48 hours
+    context: coordinating with an external delivery team
+    skills: [ETL, data pipeline, Python, SQL]
+
+  - id: ev-aws-poc
+    text: >-
+      I built a serverless pipeline end to end on S3, Glue, Lambda and Athena
+      with partitioned Parquet output, then recommended against deploying it
+      after costing it against the alternatives
+    metric: around $27 a month, 88% of it BI licensing
+    context: presented to senior management with the recommendation not to ship
+    skills: [AWS, S3, Glue, Lambda, Athena, Parquet, PySpark, data pipeline]
+
+  - id: ev-glue-etl
+    text: >-
+      I wrote the PySpark transformation job for the Glue ETL stage, covering
+      null handling, invalid-entry filtering, vehicle name standardisation
+      against a lookup table and partitioned Parquet output
+    context: cleaning vendor exports where one vehicle appeared under four names
+    skills: [PySpark, AWS, Glue, Parquet, ETL, Python]
+
+  - id: ev-automation
+    text: >-
+      I built a test request automation system across Forms, Teams, Azure DevOps
+      and SharePoint that took request-to-work-item from four to six hours down
+      to under two minutes
+    metric: 64 to 96 hours of manual effort removed
+    context: adopted as the team's standard process
+    skills: [Power Automate, Azure DevOps, SharePoint, REST API]
+
+  - id: ev-ado-rest
+    text: >-
+      I wrote the Azure DevOps REST integrations that create and update work
+      items from JSON patch arrays, including WIQL queries to surface linked bugs
+    skills: [REST API, Azure DevOps, SQL]
+
+  - id: ev-powerbi
+    text: >-
+      I built the Power BI semantic model and DAX measures behind three strategic
+      KPIs, and found that every measure was silently blank because a state was
+      never mapped to the Resolved category
+    context: diagnostics kept in the model to catch that class of bug again
+    skills: [Power BI, DAX, Power Query, data modelling, SQL]
+
+  - id: ev-honest-kpi
+    text: >-
+      When a headline KPI published far above target, I traced it to how work was
+      being recorded rather than to testing duration, and published the
+      end-to-end figure rather than narrowing the window to make it look better
+    skills: [Power BI, DAX, data modelling]
+
+  - id: ev-uat-analytics
+    text: >-
+      I wrote a three-stage Python pipeline that turned two years of
+      hand-maintained test workbooks into comparable metrics, matching column
+      headings by name against known variants so workbooks that had drifted
+      still parsed
+    context: plus a coverage matrix so uneven totals could be defended
+    skills: [Python, pandas, ETL, data pipeline, SQL]
+
+  - id: ev-llm-agent
+    text: >-
+      I designed an AI agent for document navigation whose instructions require
+      it to cite its source, flag conflicts and say when something is missing,
+      and tested it against a synthetic data pack seeded with contradictions
+    context: the test was whether it refused to guess
+    skills: [LLM, RAG, prompt engineering, Python]
+
+  - id: ev-roblox
+    text: >-
+      On a personal project I replaced seven near-identical copies of a 2,500
+      line script with one shared module, which surfaced a bug where two stores
+      disagreed about the same value
+    context: a three-developer game I set up the Rojo and Git workflow for
+    skills: [Luau, Git, data modelling]
+
+# A few sentences in your own writing. The drafter matches this register.
+# Without it, letters drift toward the same neutral corporate voice.
+voice_sample: >-
+  I work on data pipelines and the automation around them. Most of what I do is
+  making messy inputs behave: vendor exports that change format without warning,
+  spreadsheets maintained by hand for two years, processes that live in someone's
+  head. I like the part where you find out the number everyone trusted was wrong.
+  I would rather publish an unflattering figure and explain it than narrow the
+  window until it looks good.
