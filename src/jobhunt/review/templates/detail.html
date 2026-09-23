@@ -83,7 +83,7 @@
     <span class="flag">You have not edited this yet. Read it before approving.</span>
     {% endif %}
   </div>
-  <form method="post" action="/job/{{ app.job.id }}/letter">
+  <form method="post" action="/legacy/job/{{ app.job.id }}/letter">
     <textarea name="body" spellcheck="true">{{ app.letter.body }}</textarea>
     <div class="actions">
       <button type="submit">Save edits</button>
@@ -98,23 +98,23 @@
 <div class="card">
   <div class="actions">
     {% if app.stage.value == 'awaiting_review' %}
-    <form method="post" action="/job/{{ app.job.id }}/approve">
+    <form method="post" action="/legacy/job/{{ app.job.id }}/approve">
       <button type="submit" class="primary">Approve</button>
     </form>
-    <form method="post" action="/job/{{ app.job.id }}/skip">
+    <form method="post" action="/legacy/job/{{ app.job.id }}/skip">
       <input type="hidden" name="reason" value="not a fit">
       <button type="submit" class="danger">Skip</button>
     </form>
     {% elif app.stage.value == 'approved' %}
-    <form method="post" action="/job/{{ app.job.id }}/assist">
+    <form method="post" action="/legacy/job/{{ app.job.id }}/assist">
       <button type="submit" class="primary">Open form with my details</button>
     </form>
     <a class="btn" href="{{ app.job.url }}" target="_blank" rel="noopener">Open posting</a>
-    <form method="post" action="/job/{{ app.job.id }}/mark-submitted">
+    <form method="post" action="/legacy/job/{{ app.job.id }}/mark-submitted">
       <button type="submit">I have submitted it</button>
     </form>
     {% else %}
-    <a class="btn" href="/">Back to queue</a>
+    <a class="btn" href="/legacy">Back to queue</a>
     {% endif %}
   </div>
   <div class="note">

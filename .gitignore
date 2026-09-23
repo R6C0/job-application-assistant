@@ -37,3 +37,9 @@ Thumbs.db
 
 # Daemon output
 *.log
+
+# Frontend
+web/node_modules/
+web/dist/
+web/.vite/
+web/tsconfig.tsbuildinfo

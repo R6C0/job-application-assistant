@@ -20,6 +20,13 @@ feature, and it is enforced in the type system rather than by a config flag. See
                  with a reason
 ```
 
+![The review queue](docs/images/queue.png)
+
+Scores are explained rather than asserted, and the skills the scorer matched are
+highlighted inside the job description, so you can see what it saw:
+
+![A single application](docs/images/detail.png)
+
 ---
 
 ## Start here
@@ -139,19 +146,44 @@ between a letter that is yours and one you are hoping nobody reads closely.
 
 ---
 
+## The interface
+
+A React single-page app served by the same FastAPI process, dark with crimson
+used sparingly: score, danger, and the one action that matters on each screen.
+
+- **Score ring and reason bars** that animate from the real numbers, so a 62 and
+  an 88 do not look alike
+- **Matched skills highlighted in the job description**, which is the difference
+  between a score you trust and a number you squint at
+- **Letter editor** that flags the drafter's banned phrases as you type, using
+  the same list the backend validates against, so the highlight cannot drift
+  from the rule
+- **Keyboard-first**: `j`/`k` to move, `enter` to open, `a` approve, `s` skip,
+  `ctrl+s` save, `/` filter. Twenty jobs by mouse is why tools like this go unused
+- **Run from the browser**: starts a background pass and polls it, so you never
+  leave the page to find new jobs
+
+The server-rendered pages still exist at `/legacy`. They are not a leftover: if
+`web/dist` is absent, the tool still works with no frontend build at all.
+
 ## Quick start
 
 ```bash
 pip install -e ".[llm,browser]"
 cp config.example.yaml config.yaml
 cp profile.example.yaml profile.yaml   # edit: this is your CV
-cp .env.example .env                    # edit: four keys, all free
+cp .env.example .env                    # edit: keys, all free
+
+cd web && npm install && npm run build && cd ..   # builds the interface
 
 jobhunt check              # validates everything before calling anything
 jobhunt run --dry-run      # a full pass that notifies nobody
 jobhunt review             # http://127.0.0.1:8765
 jobhunt watch              # background, every 90 minutes
 ```
+
+For frontend work, `npm run dev` in `web/` serves the UI on :5173 with hot
+reload and proxies `/api` to the Python process on :8765.
 
 [docs/SETUP.md](docs/SETUP.md) covers getting the keys. Adzuna, Reed, ntfy and
 Companies House are all free; the Anthropic key is optional and costs a few pence

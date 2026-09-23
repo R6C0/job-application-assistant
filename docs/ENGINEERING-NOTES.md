@@ -68,7 +68,22 @@ watchlist of companies you care about would add real coverage inside the same
 
 LinkedIn stays out. See [DESIGN-DECISIONS.md](DESIGN-DECISIONS.md#2-official-apis-only).
 
-### 2. Scoring is heuristic, and tuned to one person
+### 2. Adzuna descriptions are truncated
+
+Adzuna's search response carries a shortened description, cut off mid-sentence
+with an ellipsis. Everything downstream reads that text: the scorer matches
+skills against it, and the drafter writes from it.
+
+So a posting whose requirements sit in the untruncated half scores lower than it
+should, and its letter has less to work with. This is the strongest argument for
+enabling Reed, whose adapter pays one extra request per result specifically to
+fetch the full description.
+
+The fix for Adzuna is to fetch the `redirect_url` and extract the description
+from the destination page, which is scraping the employer's own site rather than
+a board, and is a different conversation about terms. Not done.
+
+### 3. Scoring is heuristic, and tuned to one person
 
 The weights are a guess that looked reasonable. There is no feedback loop: the
 tool never learns that you skipped nine "Data Engineer" roles at agencies.
@@ -77,7 +92,7 @@ A better version would score on outcomes, using your own approve and skip
 decisions as labels. With a few hundred decisions that is a real model. With
 twenty it is overfitting, which is why it is not in v1.
 
-### 3. The years-of-experience blocker is blunt
+### 4. The years-of-experience blocker is blunt
 
 `_required_years` takes the largest plausible number followed by "years" in the
 description. It handles "3 years of Python, 5 years of SQL" correctly by taking
@@ -89,7 +104,7 @@ team experience", and on a posting listing a career ladder. Those get silently
 rejected. `jobhunt status` shows rejections with reasons, which is the only
 current mitigation.
 
-### 4. Company name matching is fuzzy
+### 5. Company name matching is fuzzy
 
 Companies House is matched on a normalised company name, which is genuinely
 ambiguous: agencies advertise on behalf of unnamed clients, trading names differ
@@ -100,7 +115,7 @@ letter drafter is told to use at most one company fact and only when it bears on
 the application. But a `medium` confidence brief can still be the wrong company,
 and the summary says so in words.
 
-### 5. Assisted fill breaks when ATS markup changes
+### 6. Assisted fill breaks when ATS markup changes
 
 Selectors match on field semantics (autocomplete attributes, input types, name
 fragments) rather than CSS paths, which survives redesigns better than the
@@ -111,34 +126,34 @@ A miss leaves the field blank for you to type, which is a normal Tuesday rather
 than a failure. But "it filled 3 of 9 fields" is a plausible outcome on an
 unfamiliar ATS.
 
-### 6. The number validator has false positives
+### 7. The number validator has false positives
 
 It flags any number in a draft that does not appear in the evidence string, so
 "three years" against evidence saying "3 years" trips it and burns a
 regeneration. Normalising written numbers and tolerating rounding within a
 sensible band would fix it.
 
-### 7. No retry or backoff on source failures
+### 8. No retry or backoff on source failures
 
 A rate limit or a timeout means that source contributes nothing this cycle. With
 a 90 minute loop that self-corrects, so it has not been worth the complexity, but
 a long outage is currently invisible unless you read the logs.
 
-### 8. ntfy topics are the only secret
+### 9. ntfy topics are the only secret
 
 Anyone who knows your topic name can read your notifications. The tool warns
 below 16 characters and the setup doc tells you to generate a random one, but the
 underlying model is security by obscure URL. ntfy supports authentication; this
 does not use it yet.
 
-### 9. Letters are drafted before you look at the job
+### 10. Letters are drafted before you look at the job
 
 The pipeline drafts for everything above the threshold, which costs an API call
 for jobs you will skip in two seconds. Drafting lazily on first open would be
 cheaper but would make the review page slow at exactly the wrong moment. At a few
 pence per letter the current trade is fine; at a lower threshold it would not be.
 
-### 10. Single user, single machine
+### 11. Single user, single machine
 
 SQLite with a lock, a localhost web app with no authentication, secrets in a
 `.env`. All correct for a personal tool and all wrong for anything shared. The

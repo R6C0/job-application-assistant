@@ -110,7 +110,7 @@ Blockers are blunt. The years check reads the largest plausible "N years" in the
 description, which misfires on a posting that says "5 years of SQL or equivalent
 experience". A posting like that is silently rejected and you will not see it
 unless you check `jobhunt status`. Documented in
-[ENGINEERING-NOTES.md](ENGINEERING-NOTES.md#3-the-years-of-experience-blocker-is-blunt).
+[ENGINEERING-NOTES.md](ENGINEERING-NOTES.md#4-the-years-of-experience-blocker-is-blunt).
 
 ---
 
